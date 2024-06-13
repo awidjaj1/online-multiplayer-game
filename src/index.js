@@ -1,10 +1,16 @@
 import express from 'express';
 import { createServer } from "http";
 import { Server } from "socket.io";
+import tmx from "tmx-parser";
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
+
+tmx.parseFile("./src/tiledmap.tmx", (err, map) => {
+    if (err) throw err;
+    console.log(map);
+});
 
 io.on('connect', (socket) => {
     console.log("user connected", socket.id);
