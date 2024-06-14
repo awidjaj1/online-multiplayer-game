@@ -1,1 +1,1 @@
-# online-multiplayer-snowball-game
+# online-multiplayer-game
