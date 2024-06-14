@@ -7,7 +7,19 @@ async function loadMap() {
             resolve(loadedMap);
         });
     });
-    console.log(map.tileSets.map(({firstGid,image}) => ({firstGid,image:image.source})));
+    const gidToSrcMap = map.tileSets
+        .map(({firstGid,image}) => ({[firstGid]:image.source}))
+        .reduce((acc, obj) => {
+            for (const key in obj) acc[key] = obj[key];
+            return acc;
+        }, {});
+    const keys = Object.keys(gidToSrcMap).map((key) => parseInt(key)).sort((a,b) => b - a);
+    const getSrcFromGid = (gid) => {
+        for (const key of keys) {
+            if (key <= gid) return gidToSrcMap[key];
+        }
+    };
+
     const layers = map.layers;
     const tiles = layers.map((layer) => layer.tiles);
     // console.log(tiles[1])
@@ -20,9 +32,9 @@ async function loadMap() {
             for(let col=0; col < map.width; col++){
                 const tile = tiles[map_ind][row * map.width + col]
                 try{
-                    maps2D[map_ind][row][col] = {id: tile.id, gid: tile.gid};
+                    maps2D[map_ind][row][col] = {id: tile.id, gid: tile.gid, src: getSrcFromGid(tile.gid)};
                 }catch(err){
-                    maps2D[map_ind][row][col] = {id: undefined, gid: undefined};
+                    maps2D[map_ind][row][col] = undefined;
                 }
             }
         }
