@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.1" name="Atlas_Rocks" tilewidth="16" tileheight="16" tilecount="22" columns="11">
- <image source="../../Art/Rocks/Atlas/Rocks.png" width="182" height="32"/>
+<tileset version="1.10" tiledversion="1.10.2" name="Atlas_Rocks" tilewidth="16" tileheight="16" tilecount="22" columns="11">
+ <image source="../../../../public/Art/Rocks/Atlas/Rocks.png" width="182" height="32"/>
  <tile id="3">
   <objectgroup draworder="index" id="2">
    <object id="1" x="1.1875" y="12.25">

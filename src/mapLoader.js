@@ -7,16 +7,17 @@ async function loadMap() {
             resolve(loadedMap);
         });
     });
-    const gidToSrcMap = map.tileSets
-        .map(({firstGid,image}) => ({[firstGid]:image.source}))
+    console.log(map.layers[0]);
+    const gidToImageMap = map.tileSets
+        .map(({firstGid,image}) => ({[firstGid]:{src:image.source, width:image.width, height:image.height}}))
         .reduce((acc, obj) => {
             for (const key in obj) acc[key] = obj[key];
             return acc;
         }, {});
-    const keys = Object.keys(gidToSrcMap).map((key) => parseInt(key)).sort((a,b) => b - a);
-    const getSrcFromGid = (gid) => {
+    const keys = Object.keys(gidToImageMap).map((key) => parseInt(key)).sort((a,b) => b - a);
+    const getImageFromGid = (gid) => {
         for (const key of keys) {
-            if (key <= gid) return gidToSrcMap[key];
+            if (key <= gid) return {src:gidToImageMap[key].src.substring(19), width:gidToImageMap[key].width, height:gidToImageMap[key].height};
         }
     };
 
@@ -32,7 +33,7 @@ async function loadMap() {
             for(let col=0; col < map.width; col++){
                 const tile = tiles[map_ind][row * map.width + col]
                 try{
-                    maps2D[map_ind][row][col] = {id: tile.id, gid: tile.gid, src: getSrcFromGid(tile.gid)};
+                    maps2D[map_ind][row][col] = {id: tile.id, gid: tile.gid, ...getImageFromGid(tile.gid)};
                 }catch(err){
                     maps2D[map_ind][row][col] = undefined;
                 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.1" name="Tileset_Ground" tilewidth="16" tileheight="16" tilecount="132" columns="12">
- <image source="../../Art/Ground Tileset/Tileset_Ground.png" width="192" height="176"/>
+<tileset version="1.10" tiledversion="1.10.2" name="Tileset_Ground" tilewidth="16" tileheight="16" tilecount="132" columns="12">
+ <image source="../../../../public/Art/Ground Tileset/Tileset_Ground.png" width="192" height="176"/>
  <tile id="96" probability="0.3"/>
  <tile id="97" probability="0.3"/>
  <tile id="98" probability="0.3"/>

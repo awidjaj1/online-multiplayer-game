@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.1" name="Atlas_Props" tilewidth="16" tileheight="16" tilecount="180" columns="18">
- <image source="../../Art/Props/Atlas/Props.png" width="288" height="160"/>
+<tileset version="1.10" tiledversion="1.10.2" name="Atlas_Props" tilewidth="16" tileheight="16" tilecount="180" columns="18">
+ <image source="../../../../public/Art/Props/Atlas/Props.png" width="288" height="160"/>
  <tile id="7">
   <objectgroup draworder="index" id="2">
    <object id="1" x="3.90909" y="15.8182">

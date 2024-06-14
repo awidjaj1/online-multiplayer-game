@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.1" name="Road" tilewidth="16" tileheight="16" tilecount="60" columns="6">
- <image source="../../Art/Ground Tileset/Tileset_Road.png" width="96" height="160"/>
+<tileset version="1.10" tiledversion="1.10.2" name="Road" tilewidth="16" tileheight="16" tilecount="60" columns="6">
+ <image source="../../../../public/Art/Ground Tileset/Tileset_Road.png" width="96" height="160"/>
  <wangsets>
   <wangset name="Unnamed Set" type="mixed" tile="-1">
    <wangcolor name="Empty" color="#ff0000" tile="-1" probability="1"/>

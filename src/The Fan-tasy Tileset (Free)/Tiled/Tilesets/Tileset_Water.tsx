@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.10.1" name="Tileset_Water" tilewidth="16" tileheight="16" tilecount="288" columns="24">
- <image source="../../Art/Water and Sand/Tileset_Water.png" width="384" height="192"/>
+<tileset version="1.10" tiledversion="1.10.2" name="Tileset_Water" tilewidth="16" tileheight="16" tilecount="288" columns="24">
+ <image source="../../../../public/Art/Water and Sand/Tileset_Water.png" width="384" height="192"/>
  <tile id="0">
   <objectgroup draworder="index" id="2">
    <object id="1" x="2.875" y="1.0625">
