@@ -31,18 +31,35 @@ function loop() {
                 if(!tile)
                     continue;
 
+                const cols = parseInt(tile.width / TILE_SIZE);
+                const rows = parseInt(tile.height / TILE_SIZE);
+                const imageRow = parseInt(tile.id / cols);
+                const imageCol = tile.id % cols;
+                let widthScale = 1;
+                let heightScale = 1;
+
                 if(!images[tile.src]){
                     images[tile.src] = new Image();
                     images[tile.src].src = tile.src;
                     // console.log(images[tile.src]);
                     // console.log(tile);
+                    // console.log(imageRow, imageCol, rows, cols, tile.width, tile.height);
                 }
-                const cols = tile.width / TILE_SIZE;
-                const rows = tile.height / TILE_SIZE;
-                const imageRow = parseInt(tile.id / cols);
-                const imageCol = tile.id % cols;
+
+                if(tile.hflip){
+                    ctx.scale(-1, 1); //make x scale negatively
+                    ctx.translate(-TILE_SIZE, 0); // Adjust position after flipping horizontally
+                    widthScale = -1;
+                }
+                if(tile.vflip){
+                    ctx.scale(1, -1); //make y scale negatively
+                    ctx.translate(0, -TILE_SIZE); // Adjust position after flipping vertically
+                    heightScale = -1;
+                }
                 ctx.drawImage(images[tile.src], imageCol * TILE_SIZE, imageRow * TILE_SIZE, TILE_SIZE, TILE_SIZE, 
-                    col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    col * TILE_SIZE * widthScale, row * TILE_SIZE * heightScale, TILE_SIZE, TILE_SIZE);
+                // clear transforms using identity matrix
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
         }
     }

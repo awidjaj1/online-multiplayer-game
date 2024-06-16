@@ -7,7 +7,7 @@ async function loadMap() {
             resolve(loadedMap);
         });
     });
-    console.log(map.layers[0].horizontalFlips);
+    // console.log(map.layers[0].horizontalFlips);
     const gidToImageMap = map.tileSets
         .map(({firstGid,image}) => ({[firstGid]:{src:image.source, width:image.width, height:image.height}}))
         .reduce((acc, obj) => {
@@ -32,11 +32,19 @@ async function loadMap() {
         for(let row=0; row < map.height; row++){
             for(let col=0; col < map.width; col++){
                 const tile = tiles[map_ind][row * map.width + col];
+                let animations = null;
                 if(tile && tile.animations.length !== 0){
-                    console.log(tile.objectGroups[0]);
+                    animations = tile.animations;
                 }
                 try{
-                    maps2D[map_ind][row][col] = {id: tile.id, gid: tile.gid, ...getImageFromGid(tile.gid)};
+                    maps2D[map_ind][row][col] = {
+                                                    id: tile.id, 
+                                                    gid: tile.gid, 
+                                                    animations: animations, 
+                                                    hflip: map.layers[map_ind].horizontalFlips[row * map.width + col], 
+                                                    vflip: map.layers[map_ind].verticalFlips[row * map.width + col], 
+                                                    ...getImageFromGid(tile.gid)
+                                                };
                 }catch(err){
                     maps2D[map_ind][row][col] = undefined;
                 }
@@ -44,6 +52,7 @@ async function loadMap() {
         }
     }
 
+    // console.log(maps2D[0][0]);
     return maps2D;
     
 }
