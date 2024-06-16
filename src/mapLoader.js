@@ -7,7 +7,7 @@ async function loadMap() {
             resolve(loadedMap);
         });
     });
-    console.log(map.layers[0]);
+    console.log(map.layers[0].horizontalFlips);
     const gidToImageMap = map.tileSets
         .map(({firstGid,image}) => ({[firstGid]:{src:image.source, width:image.width, height:image.height}}))
         .reduce((acc, obj) => {
@@ -31,7 +31,10 @@ async function loadMap() {
     for(let map_ind=0; map_ind < maps2D.length; map_ind++){
         for(let row=0; row < map.height; row++){
             for(let col=0; col < map.width; col++){
-                const tile = tiles[map_ind][row * map.width + col]
+                const tile = tiles[map_ind][row * map.width + col];
+                if(tile && tile.animations.length !== 0){
+                    console.log(tile.objectGroups[0]);
+                }
                 try{
                     maps2D[map_ind][row][col] = {id: tile.id, gid: tile.gid, ...getImageFromGid(tile.gid)};
                 }catch(err){
