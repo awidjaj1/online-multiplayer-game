@@ -9,6 +9,8 @@ const ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+// gets ride of tearing, this line only works after you set the canvas width and height for some reason
+ctx.imageSmoothingEnabled = false;
 
 let maps2D = null;
 let images = {};
@@ -76,9 +78,10 @@ function loop() {
     if (myPlayer) {
         // basically shift view to the center of the screen 
         // but then adjust left/right relative to character's position
-        cameraX = clamp(myPlayer.x - canvas.width / 2, 0, mapWidth - canvas.width);
-        cameraY = clamp(myPlayer.y - canvas.height / 2, 0, mapHeight - canvas.height);
+        cameraX = Math.floor(clamp(myPlayer.x - canvas.width / 2, 0, mapWidth - canvas.width));
+        cameraY = Math.floor(clamp(myPlayer.y - canvas.height / 2, 0, mapHeight - canvas.height));
     }
+
     
     for(let map_ind=0; map_ind < maps2D.length; map_ind++){
         for(let row=0; row < maps2D[map_ind].length; row++){
@@ -87,8 +90,8 @@ function loop() {
                 if(!tile)
                     continue;
 
-                const cols = parseInt(tile.width / TILE_SIZE);
-                const imageRow = parseInt(tile.id / cols);
+                const cols = Math.floor(tile.width / TILE_SIZE);
+                const imageRow = Math.floor(tile.id / cols);
                 const imageCol = tile.id % cols;
                 let widthScale = 1;
                 let heightScale = 1;
@@ -103,16 +106,19 @@ function loop() {
 
                 if(tile.hflip){
                     ctx.scale(-1, 1); //make x scale negatively
-                    ctx.translate(-TILE_SIZE * ZOOM, 0); // Adjust position after flipping horizontally
+                    ctx.translate(Math.floor(-TILE_SIZE * ZOOM), 0); // Adjust position after flipping horizontally
                     widthScale = -1;
                 }
                 if(tile.vflip){
                     ctx.scale(1, -1); //make y scale negatively
-                    ctx.translate(0, -TILE_SIZE * ZOOM); // Adjust position after flipping vertically
+                    ctx.translate(0, Math.floor(-TILE_SIZE * ZOOM)); // Adjust position after flipping vertically
                     heightScale = -1;
                 }
                 ctx.drawImage(images[tile.src], imageCol * TILE_SIZE, imageRow * TILE_SIZE, TILE_SIZE, TILE_SIZE, 
-                (col * TILE_SIZE * ZOOM - cameraX) * widthScale, (row * TILE_SIZE * ZOOM - cameraY) * heightScale, TILE_SIZE * ZOOM, TILE_SIZE * ZOOM);
+                Math.floor((col * TILE_SIZE * ZOOM - cameraX) * widthScale), 
+                Math.floor((row * TILE_SIZE * ZOOM - cameraY) * heightScale), 
+                Math.floor(TILE_SIZE * ZOOM), 
+                Math.floor(TILE_SIZE * ZOOM));
                 // clear transforms using identity matrix
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
             }
@@ -121,7 +127,9 @@ function loop() {
     
     players.forEach((player) => {
         // console.log(player.x - cameraX, player.y - cameraY,canvas.width/2, canvas.height/2);
-        ctx.drawImage(archer, 0, 0, 128, 128, player.x - cameraX, player.y - cameraY, TILE_SIZE * ZOOM * 3, TILE_SIZE * ZOOM * 3);
+        ctx.drawImage(archer, 0, 0, 128, 128, player.x - cameraX, player.y - cameraY, 
+            Math.floor(TILE_SIZE * ZOOM * 3), 
+            Math.floor(TILE_SIZE * ZOOM * 3));
     });
 
     window.requestAnimationFrame(loop);
