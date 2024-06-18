@@ -86,7 +86,7 @@ window.addEventListener('click', (e) => {
     // get angle of click relative to player's position on the screen
     const angle = Math.atan2(e.clientY - (myPlayer.y + (archer.drawnSize/2) - cameraY), 
                             e.clientX - (myPlayer.x + (archer.drawnSize/2) - cameraX));
-    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1};
+    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1, TTL: 1000};
     socket.emit("arrow", arrow);
 });
 
@@ -149,9 +149,18 @@ function loop() {
     
     players.forEach((player) => {
         // console.log(player.x - cameraX, player.y - cameraY,canvas.width/2, canvas.height/2);
-        ctx.drawImage(archer, 0, 0, archer.size, archer.size, player.x - cameraX, player.y - cameraY, 
+        let widthScale = 1
+        if(player.facing === 'left'){
+            ctx.scale(-1, 1); //make x scale negatively
+            ctx.translate(-archer.drawnSize, 0); // Adjust position after flipping horizontally
+            widthScale = -1;
+        }
+        ctx.drawImage(archer, 0, 0, archer.size, archer.size, 
+            (player.x - cameraX) * widthScale, 
+            player.y - cameraY, 
             archer.drawnSize, 
             archer.drawnSize);
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
     });
 
     arrows.forEach((arrow) => {

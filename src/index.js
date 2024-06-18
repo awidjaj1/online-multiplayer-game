@@ -7,30 +7,35 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
-const SPEED = 10;
 const TICK_RATE = 30;
-const ARROW_SPEED = SPEED / 2;
+const SPEED = TICK_RATE * .005;
+const ARROW_SPEED = SPEED * 2.5;
 
-function tick() {
+function tick(dt) {
     for (const player of players) {
         const inputs = inputsMap[player.id];
         if (inputs.up) {
-            player.y -= SPEED;
+            player.y -= SPEED * dt;
         } else if (inputs.down) {
-            player.y += SPEED;
+            player.y += SPEED * dt;
         }
 
         if (inputs.right) {
-            player.x += SPEED;
+            player.x += SPEED * dt;
+            player.facing = 'right';
         } else if (inputs.left) {
-            player.x -= SPEED;
+            player.x -= SPEED * dt;
+            player.facing = 'left';
         }
     }
 
     arrows.forEach((arrow) => {
-        arrow.x += Math.cos(arrow.angle) * ARROW_SPEED;
-        arrow.y += Math.sin(arrow.angle) * ARROW_SPEED;
+        arrow.x += Math.cos(arrow.angle) * ARROW_SPEED * dt;
+        arrow.y += Math.sin(arrow.angle) * ARROW_SPEED * dt;
+        arrow.TTL -= dt;
     })
+
+    arrows = arrows.filter((arrow) => arrow.TTL > 0);
 
     io.emit("players", players);
     io.emit("arrows", arrows);
@@ -57,7 +62,8 @@ async function main() {
         players.push({
             id: socket.id,
             x: 0,
-            y: 0
+            y: 0,
+            facing: 'right'
         });
 
         socket.emit("map", maps2D);
@@ -83,9 +89,16 @@ async function main() {
     
     httpServer.listen(5000);
 
-    // serve 30 frames per second
+    // attempt to serve 30 frames per second
     // 1000 ms / TICK_RATE(=30)
-    setInterval(tick, 1000 / TICK_RATE);
+    // keep track of delta time in case of time bleeding
+    let lastUpdate = Date.now();
+    setInterval(() => {
+        const now = Date.now();
+        const dt = now - lastUpdate;
+        tick(dt);
+        lastUpdate = now;
+    }, 1000 / TICK_RATE);
 }
 
 main();
