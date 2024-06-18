@@ -1,18 +1,11 @@
 import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
 
-const TILE_SIZE = 16;
+let TILE_SIZE = null;
 // zoom scales the tile size in the canvas
-const ZOOM = 1.5;
+let ZOOM = 0;
 
 const archer = new Image();
-archer.src = "/Art/Archer/Idle.png";
-archer.size = 128;
-archer.drawnSize = Math.floor(TILE_SIZE * ZOOM * 3);
 const arrow_sprite = new Image();
-arrow_sprite.src = "/Art/Archer/Arrow.png";
-arrow_sprite.size = 48;
-arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
-arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
 
 const socket = io('ws://localhost:5000');
 const canvas = document.getElementById("canvas");
@@ -31,8 +24,24 @@ let arrows = [];
 
 let cameraX = 0;
 let cameraY = 0;
+let mapHeight = null;
+let mapWidth = null;
+
+socket.on('settings', (settings) => {
+    ZOOM = settings.ZOOM;
+    TILE_SIZE = settings.TILE_SIZE;
 
 
+    archer.src = settings.archer_spr.src;
+    arrow_sprite.src = settings.arrow_spr.src;
+    archer.size = settings.archer_spr.size;
+    arrow_sprite.size = settings.arrow_spr.size;
+    archer.drawnSize = Math.floor(TILE_SIZE * ZOOM * 3);
+    arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
+    arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
+    mapHeight = settings.mapHeight;
+    mapWidth = settings.mapWidth;
+})
 
 socket.on('map', (maps) => {
     maps2D = maps;
@@ -86,7 +95,7 @@ window.addEventListener('click', (e) => {
     // get angle of click relative to player's position on the screen
     const angle = Math.atan2(e.clientY - (myPlayer.y + (archer.drawnSize/2) - cameraY), 
                             e.clientX - (myPlayer.x + (archer.drawnSize/2) - cameraX));
-    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1, TTL: 1000};
+    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1, TTL: 1250};
     socket.emit("arrow", arrow);
 });
 
@@ -94,8 +103,6 @@ function loop() {
     ctx.clearRect(0,0, canvas.width, canvas.height);
 
     const myPlayer = players.find((player) => player.id === socket.id);
-    const mapHeight = TILE_SIZE * (maps2D[0].length) * ZOOM;
-    const mapWidth = TILE_SIZE * (maps2D[0][0].length) * ZOOM;
 
     if (myPlayer) {
         // basically shift view to the center of the screen 

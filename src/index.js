@@ -8,7 +8,7 @@ const httpServer = createServer(app);
 const io = new Server(httpServer);
 
 const TICK_RATE = 30;
-const SPEED = TICK_RATE * .005;
+const SPEED = TICK_RATE * .0055;
 const ARROW_SPEED = SPEED * 2.5;
 
 function tick(dt) {
@@ -27,6 +27,18 @@ function tick(dt) {
             player.x -= SPEED * dt;
             player.facing = 'left';
         }
+
+        if(player.y < 0){
+            player.y = 0;
+        } else if(player.y + archer.drawnSize > mapHeight){
+            player.y = mapHeight - archer.drawnSize;
+        }
+
+        if(player.x < 0){
+            player.x = 0;
+        } else if(player.x + archer.drawnSize > mapWidth){
+            player.x = mapWidth - archer.drawnSize;
+        }
     }
 
     arrows.forEach((arrow) => {
@@ -42,8 +54,22 @@ function tick(dt) {
 }
 
 const inputsMap = {};
+const ZOOM = 1.5;
+const TILE_SIZE = 16;
+let mapHeight = null;
+let mapWidth = null;
 let players = [];
-let arrows = []
+let arrows = [];
+
+const archer = {};
+archer.src = "/Art/Archer/Idle.png";
+archer.size = 128;
+archer.drawnSize = Math.floor(TILE_SIZE * ZOOM * 3);
+const arrow_sprite = {};
+arrow_sprite.src = "/Art/Archer/Arrow.png";
+arrow_sprite.size = 48;
+arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
+arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
 
 async function main() {
     const maps2D = await loadMap();
@@ -51,6 +77,7 @@ async function main() {
     // console.log(maps2D[1].length);
     io.on('connect', (socket) => {
         console.log("user connected", socket.id);
+        
 
         inputsMap[socket.id] = {
             up: false,
@@ -66,15 +93,30 @@ async function main() {
             facing: 'right'
         });
 
+        mapHeight = TILE_SIZE * (maps2D[0].length) * ZOOM;
+        mapWidth = TILE_SIZE * (maps2D[0][0].length) * ZOOM;
+
+        socket.emit("settings", {ZOOM: ZOOM, 
+            TILE_SIZE: TILE_SIZE, 
+            mapHeight: mapHeight, 
+            mapWidth: mapWidth,
+            archer_spr: archer, 
+            arrow_spr: arrow_sprite});
         socket.emit("map", maps2D);
 
         socket.on('input', (inputs) => {
             inputsMap[socket.id] = inputs;
         });
 
+        const arrowCD = 250;
+        let lastArrow = Date.now();
         socket.on('arrow', (arrow) => {
-            const player = players.find((player) => player.id === socket.id);
-            arrows.push(arrow);
+            const now = Date.now();
+            const dt = now - lastArrow;
+            if(dt > arrowCD){
+                arrows.push(arrow);
+                lastArrow = now;
+            }
         })
 
         socket.on('disconnect', () => {
