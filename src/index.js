@@ -57,10 +57,10 @@ function tick(dt) {
                     continue;
                 if(isColliding(
                     {
-                        x:player.x, 
-                        y:player.y, 
-                        w:Math.floor(archer.drawnSize/6), 
-                        h:Math.floor(archer.drawnSize)},
+                        x:player.x + archer.drawnSize/2, 
+                        y:player.y + archer.drawnSize*(9/10), 
+                        w:archer.drawnSize/40, 
+                        h:archer.drawnSize/10},
                     {
                         x:Math.floor(col * TILE_SIZE * ZOOM), 
                         y:Math.floor(row * TILE_SIZE * ZOOM), 
