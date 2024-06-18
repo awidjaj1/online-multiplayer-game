@@ -9,6 +9,7 @@ const io = new Server(httpServer);
 
 const SPEED = 10;
 const TICK_RATE = 30;
+const ARROW_SPEED = SPEED / 2;
 
 function tick() {
     for (const player of players) {
@@ -26,11 +27,18 @@ function tick() {
         }
     }
 
+    arrows.forEach((arrow) => {
+        arrow.x += Math.cos(arrow.angle) * ARROW_SPEED;
+        arrow.y += Math.sin(arrow.angle) * ARROW_SPEED;
+    })
+
     io.emit("players", players);
+    io.emit("arrows", arrows);
 }
 
 const inputsMap = {};
 let players = [];
+let arrows = []
 
 async function main() {
     const maps2D = await loadMap();
@@ -58,8 +66,13 @@ async function main() {
             inputsMap[socket.id] = inputs;
         });
 
+        socket.on('arrow', (arrow) => {
+            const player = players.find((player) => player.id === socket.id);
+            arrows.push(arrow);
+        })
+
         socket.on('disconnect', () => {
-            players = players.filter((player) => {player.id !== socket.id});
+            players = players.filter((player) => player.id !== socket.id);
         });
     });
     

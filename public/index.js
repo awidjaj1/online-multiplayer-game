@@ -1,7 +1,18 @@
 import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
 
+const TILE_SIZE = 16;
+// zoom scales the tile size in the canvas
+const ZOOM = 1.5;
+
 const archer = new Image();
 archer.src = "/Art/Archer/Idle.png";
+archer.size = 128;
+archer.drawnSize = Math.floor(TILE_SIZE * ZOOM * 3);
+const arrow_sprite = new Image();
+arrow_sprite.src = "/Art/Archer/Arrow.png";
+arrow_sprite.size = 48;
+arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
+arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
 
 const socket = io('ws://localhost:5000');
 const canvas = document.getElementById("canvas");
@@ -15,13 +26,13 @@ ctx.imageSmoothingEnabled = false;
 let maps2D = null;
 let images = {};
 let players =  [];
-const TILE_SIZE = 16;
-// zoom scales the tile size in the canvas
-const ZOOM = 1.5;
+let arrows = [];
 
-socket.on("connect", () => {
-    console.log("connected");
-});
+
+let cameraX = 0;
+let cameraY = 0;
+
+
 
 socket.on('map', (maps) => {
     maps2D = maps;
@@ -31,7 +42,11 @@ socket.on('map', (maps) => {
 
 socket.on('players', (serverPlayers) => {
     players = serverPlayers;
-})
+});
+
+socket.on('arrows', (serverArrows) => {
+    arrows = serverArrows;
+});
 
 const inputs = {
     up: false,
@@ -66,6 +81,15 @@ window.addEventListener('keyup', (e) => {
     socket.emit('input', inputs)
 });
 
+window.addEventListener('click', (e) => {
+    const myPlayer = players.find((player) => player.id === socket.id);
+    // get angle of click relative to player's position on the screen
+    const angle = Math.atan2(e.clientY - (myPlayer.y + (archer.drawnSize/2) - cameraY), 
+                            e.clientX - (myPlayer.x + (archer.drawnSize/2) - cameraX));
+    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1};
+    socket.emit("arrow", arrow);
+});
+
 function loop() {
     ctx.clearRect(0,0, canvas.width, canvas.height);
 
@@ -73,8 +97,6 @@ function loop() {
     const mapHeight = TILE_SIZE * (maps2D[0].length) * ZOOM;
     const mapWidth = TILE_SIZE * (maps2D[0][0].length) * ZOOM;
 
-    let cameraX = 0;
-    let cameraY = 0;
     if (myPlayer) {
         // basically shift view to the center of the screen 
         // but then adjust left/right relative to character's position
@@ -127,9 +149,25 @@ function loop() {
     
     players.forEach((player) => {
         // console.log(player.x - cameraX, player.y - cameraY,canvas.width/2, canvas.height/2);
-        ctx.drawImage(archer, 0, 0, 128, 128, player.x - cameraX, player.y - cameraY, 
-            Math.floor(TILE_SIZE * ZOOM * 3), 
-            Math.floor(TILE_SIZE * ZOOM * 3));
+        ctx.drawImage(archer, 0, 0, archer.size, archer.size, player.x - cameraX, player.y - cameraY, 
+            archer.drawnSize, 
+            archer.drawnSize);
+    });
+
+    arrows.forEach((arrow) => {
+        ctx.save();
+        const arrowX = arrow.x - cameraX;
+        const arrowY = arrow.y - cameraY;
+        ctx.translate(arrowX, arrowY);
+        // ctx.rect(0, 0, 10, 10);
+        // ctx.fill();
+        ctx.rotate(arrow.angle);
+        ctx.drawImage(arrow_sprite, 0, 0, arrow_sprite.size, arrow_sprite.size, 
+            -arrow_sprite.drawnWidth/4, 
+            -arrow_sprite.drawnHeight/2, 
+            arrow_sprite.drawnWidth, 
+            arrow_sprite.drawnHeight);
+        ctx.restore();
     });
 
     window.requestAnimationFrame(loop);
