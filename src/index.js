@@ -7,8 +7,8 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
-const TICK_RATE = 30;
-const SPEED = TICK_RATE * .0055;
+const TICK_RATE = 120;
+const SPEED = TICK_RATE * .0025;
 const ARROW_SPEED = SPEED * 2.5;
 
 function tick(dt) {
@@ -45,7 +45,22 @@ function tick(dt) {
         arrow.x += Math.cos(arrow.angle) * ARROW_SPEED * dt;
         arrow.y += Math.sin(arrow.angle) * ARROW_SPEED * dt;
         arrow.TTL -= dt;
-    })
+
+        //rcos(theta) + arrow.x
+        //rsin(theta) + arrow.y
+        const arrowHeadX = (Math.cos(arrow.angle) * arrow_sprite.drawnWidth) + arrow.x;
+        const arrowHeadY = (Math.sin(arrow.angle) * arrow_sprite.drawnWidth) + arrow.y;
+
+        for (const player of players){
+            
+            if(arrow.id !== player.id &&
+                arrowHeadX >= player.x && arrowHeadX <= player.x + archer.drawnSize
+                && arrowHeadY >= player.y && arrowHeadY <= player.y + archer.drawnSize){
+                    player.x = 0;
+                    player.y = 0;
+            }
+        }
+    });
 
     arrows = arrows.filter((arrow) => arrow.TTL > 0);
 

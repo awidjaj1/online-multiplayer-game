@@ -95,7 +95,7 @@ window.addEventListener('click', (e) => {
     // get angle of click relative to player's position on the screen
     const angle = Math.atan2(e.clientY - (myPlayer.y + (archer.drawnSize/2) - cameraY), 
                             e.clientX - (myPlayer.x + (archer.drawnSize/2) - cameraX));
-    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1, TTL: 1250};
+    const arrow = {angle, x:myPlayer.x + archer.drawnSize/2, y:myPlayer.y + archer.drawnSize/1.1, TTL: 1250, id:myPlayer.id};
     socket.emit("arrow", arrow);
 });
 
