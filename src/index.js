@@ -11,9 +11,18 @@ const TICK_RATE = 120;
 const SPEED = TICK_RATE * .0025;
 const ARROW_SPEED = SPEED * 2.5;
 
+function isColliding(rect1, rect2){
+    return (rect1.x < rect2.x + rect2.w &&
+            rect1.x + rect1.w > rect2.x &&
+            rect1.y < rect2.y + rect2.h &&
+            rect1.y + rect1.h > rect2.y);
+}
+
 function tick(dt) {
     for (const player of players) {
         const inputs = inputsMap[player.id];
+        const prevX = player.x;
+        const prevY = player.y;
         if (inputs.up) {
             player.y -= SPEED * dt;
         } else if (inputs.down) {
@@ -39,8 +48,34 @@ function tick(dt) {
         } else if(player.x + archer.drawnSize > mapWidth){
             player.x = mapWidth - archer.drawnSize;
         }
-    }
 
+        const objMap = maps2D.at(-1);
+        for(let row=0; row < objMap.length; row++){
+            for(let col=0; col < objMap[0].length; col++){
+                const tile = objMap[row][col]
+                if(!tile)
+                    continue;
+                if(isColliding(
+                    {
+                        x:player.x, 
+                        y:player.y, 
+                        w:Math.floor(archer.drawnSize/6), 
+                        h:Math.floor(archer.drawnSize)},
+                    {
+                        x:Math.floor(col * TILE_SIZE * ZOOM), 
+                        y:Math.floor(row * TILE_SIZE * ZOOM), 
+                        w: Math.floor(TILE_SIZE * ZOOM), 
+                        h: Math.floor(TILE_SIZE * ZOOM)})
+                    ){
+                            player.x = prevX;
+                            player.y = prevY;
+                            break;
+
+                }
+
+            }
+        }
+    }
     arrows.forEach((arrow) => {
         arrow.x += Math.cos(arrow.angle) * ARROW_SPEED * dt;
         arrow.y += Math.sin(arrow.angle) * ARROW_SPEED * dt;
@@ -56,8 +91,10 @@ function tick(dt) {
             if(arrow.id !== player.id &&
                 arrowHeadX >= player.x && arrowHeadX <= player.x + archer.drawnSize
                 && arrowHeadY >= player.y && arrowHeadY <= player.y + archer.drawnSize){
-                    player.x = 0;
-                    player.y = 0;
+                    player.x = mapWidth/2;
+                    player.y = mapHeight/2;
+                    arrow.TTL = 0;
+                    break;
             }
         }
     });
@@ -66,13 +103,14 @@ function tick(dt) {
 
     io.emit("players", players);
     io.emit("arrows", arrows);
-}
+};
 
 const inputsMap = {};
 const ZOOM = 1.5;
 const TILE_SIZE = 16;
 let mapHeight = null;
 let mapWidth = null;
+let maps2D = null;
 let players = [];
 let arrows = [];
 
@@ -87,7 +125,7 @@ arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
 arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
 
 async function main() {
-    const maps2D = await loadMap();
+    maps2D = await loadMap();
 
     // console.log(maps2D[1].length);
     io.on('connect', (socket) => {
@@ -100,16 +138,15 @@ async function main() {
             left: false,
             right: false
         };
-
+        mapHeight = TILE_SIZE * (maps2D[0].length) * ZOOM;
+        mapWidth = TILE_SIZE * (maps2D[0][0].length) * ZOOM;
         players.push({
             id: socket.id,
-            x: 0,
-            y: 0,
+            x: mapWidth/2,
+            y: mapHeight/2,
             facing: 'right'
         });
 
-        mapHeight = TILE_SIZE * (maps2D[0].length) * ZOOM;
-        mapWidth = TILE_SIZE * (maps2D[0][0].length) * ZOOM;
 
         socket.emit("settings", {ZOOM: ZOOM, 
             TILE_SIZE: TILE_SIZE, 
