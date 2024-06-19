@@ -34,15 +34,33 @@ function handleUserUnpublished(user) {
 async function join() {
     client.on("user-published", handleUserPublished);
     client.on("user-unpublished", handleUserUnpublished);
+
+    const resp = await fetch(`access_token/${options.channel}`);
+    const {token} = await resp.json();
+    options.token = token;
   
     [ options.uid, localTracks.audioTrack] = await Promise.all([
-      client.join(options.appid, options.channel, options.token || null),
+      client.join(options.appid, options.channel, options.token),
       AgoraRTC.createMicrophoneAudioTrack()
     ]);
 
     socket.emit("voice_id", options.uid);
 
     await client.publish(Object.values(localTracks));
+
+    client.on("token-privilege-will-expire", async() => {
+        const resp = await fetch(`access_token/${options.channel}`);
+        const {token} = await resp.json();
+        options.token = token;
+        await client.renewToken(token);
+    });
+
+    client.on("token-privilege-did-expire", async() => {
+        const resp = await fetch(`access_token/${options.channel}`);
+        const {token} = await resp.json();
+        options.token = token;
+        options.uid = await client.join(options.appid, options.channel, options.token);
+    });
 }
 join();
 // code from agora web SDK END

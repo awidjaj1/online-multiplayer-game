@@ -2,11 +2,40 @@ import express from 'express';
 import { createServer } from "http";
 import { Server } from "socket.io";
 import loadMap from './mapLoader.js';
+import pkg from 'agora-access-token';
+const { RtcTokenBuilder, RtcRole } = pkg;
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 const PORT = process.env.PORT || 5000;
+const APP_ID = process.env.APP_ID;
+const APP_CERTIFICATE = process.env.APP_CERTIFICATE;
+
+// do not cache the agora token (get a fresh one each time)
+const nocache = (_, resp, next) => {
+    resp.header('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+    resp.header('Expires', '-1');
+    resp.header('Pragma', 'no-cache');
+    next();
+};
+const generateRTCToken = (req, resp) => { 
+    resp.header('Access-Control-Allow-Origin', '*');
+    const channelName = req.params.channel;
+    if(channelName !== 'game') return resp.status(500).json({'error': 'channel should be "game"'});
+
+    const role = RtcRole.PUBLISHER;
+    // don't care about uid authentication
+    const uid = 0;
+    const expireTime = 3600 + (Date.now()/1000);
+    const token = RtcTokenBuilder.buildTokenWithUid(APP_ID, APP_CERTIFICATE, channelName, uid, role, expireTime);
+    return resp.status(200).json({'token':token});
+};
+app.get('/access_token/:channel', nocache , generateRTCToken);
+
 const TICK_RATE = 120;
 const SPEED = TICK_RATE * .0025;
 const ARROW_SPEED = SPEED * 2.5;
