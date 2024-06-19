@@ -136,7 +136,6 @@ async function main() {
     io.on('connect', (socket) => {
         console.log("user connected", socket.id);
         
-
         inputsMap[socket.id] = {
             up: false,
             down: false,
@@ -145,14 +144,15 @@ async function main() {
         };
         mapHeight = TILE_SIZE * (maps2D[0].length) * ZOOM;
         mapWidth = TILE_SIZE * (maps2D[0][0].length) * ZOOM;
-        players.push({
+        const player = {
             id: socket.id,
             x: mapWidth/2,
             y: mapHeight/2,
             isMuted: false,
+            voice_id: null,
             facing: 'right'
-        });
-
+        };
+        players.push(player);
 
         socket.emit("init", {ZOOM: ZOOM, 
             TILE_SIZE: TILE_SIZE, 
@@ -162,6 +162,10 @@ async function main() {
             arrow_spr: arrow_sprite,
             mic_spr: mic});
         socket.emit("map", maps2D);
+
+        socket.on("voice_id", (voice_id) => {
+            player.voice_id = voice_id;
+        })
 
         socket.on('input', (inputs) => {
             inputsMap[socket.id] = inputs;
@@ -178,7 +182,6 @@ async function main() {
         })
 
         socket.on('mute', (isMuted) => {
-            const player = players.find((player) => player.id === socket.id);
             player.isMuted = isMuted;
         });
 

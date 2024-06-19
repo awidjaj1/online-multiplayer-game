@@ -40,6 +40,8 @@ async function join() {
       AgoraRTC.createMicrophoneAudioTrack()
     ]);
 
+    socket.emit("voice_id", options.uid);
+
     await client.publish(Object.values(localTracks));
 }
 join();
@@ -242,6 +244,7 @@ function loop() {
             mic.drawnSize)
         }
         ctx.setTransform(1, 0, 0, 1, 0, 0);
+        console.log(remoteUsers, options.uid);
     });
 
     arrows.forEach((arrow) => {
