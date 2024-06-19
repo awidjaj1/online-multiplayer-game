@@ -105,6 +105,7 @@ function tick(dt) {
     io.emit("arrows", arrows);
 };
 
+const arrowCD = 250;
 const inputsMap = {};
 const ZOOM = 1.5;
 const TILE_SIZE = 16;
@@ -123,6 +124,10 @@ arrow_sprite.src = "/Art/Archer/Arrow.png";
 arrow_sprite.size = 48;
 arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
 arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
+const mic = {};
+mic.src = "/Art/mic.png";
+mic.size = 512;
+mic.drawnSize = Math.floor(TILE_SIZE * ZOOM * 1.25);
 
 async function main() {
     maps2D = await loadMap();
@@ -144,23 +149,24 @@ async function main() {
             id: socket.id,
             x: mapWidth/2,
             y: mapHeight/2,
+            isMuted: false,
             facing: 'right'
         });
 
 
-        socket.emit("settings", {ZOOM: ZOOM, 
+        socket.emit("init", {ZOOM: ZOOM, 
             TILE_SIZE: TILE_SIZE, 
             mapHeight: mapHeight, 
             mapWidth: mapWidth,
             archer_spr: archer, 
-            arrow_spr: arrow_sprite});
+            arrow_spr: arrow_sprite,
+            mic_spr: mic});
         socket.emit("map", maps2D);
 
         socket.on('input', (inputs) => {
             inputsMap[socket.id] = inputs;
         });
 
-        const arrowCD = 250;
         let lastArrow = Date.now();
         socket.on('arrow', (arrow) => {
             const now = Date.now();
@@ -170,6 +176,11 @@ async function main() {
                 lastArrow = now;
             }
         })
+
+        socket.on('mute', (isMuted) => {
+            const player = players.find((player) => player.id === socket.id);
+            player.isMuted = isMuted;
+        });
 
         socket.on('disconnect', () => {
             players = players.filter((player) => player.id !== socket.id);

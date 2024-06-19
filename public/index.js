@@ -50,14 +50,17 @@ button.addEventListener('click', () => {
     if(button.innerHTML === 'mute') {
         localTracks.audioTrack.setEnabled(false);
         button.innerHTML = 'unmute';
+        socket.emit('mute', true);
     } else{
         localTracks.audioTrack.setEnabled(true);
         button.innerHTML = 'mute';
+        socket.emit('mute', false);
     }
 });
 
 const archer = new Image();
 const arrow_sprite = new Image();
+const mic = new Image();
 const walk = new Audio('/Audio/walk.wav');
 walk.loop = true;
 
@@ -81,7 +84,7 @@ let cameraY = 0;
 let mapHeight = null;
 let mapWidth = null;
 
-socket.on('settings', (settings) => {
+socket.on('init', (settings) => {
     ZOOM = settings.ZOOM;
     TILE_SIZE = settings.TILE_SIZE;
 
@@ -93,6 +96,10 @@ socket.on('settings', (settings) => {
     archer.drawnSize = Math.floor(TILE_SIZE * ZOOM * 3);
     arrow_sprite.drawnWidth = Math.floor(TILE_SIZE * ZOOM * 1.5);
     arrow_sprite.drawnHeight = Math.floor(TILE_SIZE * ZOOM * 5);
+    mic.src = settings.mic_spr.src;
+    mic.size = settings.mic_spr.size;
+    mic.drawnSize = settings.mic_spr.drawnSize;
+
     mapHeight = settings.mapHeight;
     mapWidth = settings.mapWidth;
 })
@@ -227,6 +234,13 @@ function loop() {
             player.y - cameraY, 
             archer.drawnSize, 
             archer.drawnSize);
+        if(!player.isMuted){
+            ctx.drawImage(mic, 
+            Math.floor((player.x + (widthScale*archer.drawnSize/4) - cameraX) * widthScale), 
+            player.y - cameraY, 
+            mic.drawnSize, 
+            mic.drawnSize)
+        }
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     });
 
