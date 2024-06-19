@@ -65,8 +65,8 @@ const arrow_sprite = new Image();
 const mic = new Image();
 const walk = new Audio('/Audio/walk.wav');
 walk.loop = true;
-
-const socket = io('ws://localhost:5000');
+const PORT = process.env.PORT || 5000;
+const socket = io(`ws://localhost:${PORT}`);
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
@@ -244,7 +244,13 @@ function loop() {
             mic.drawnSize)
         }
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        console.log(remoteUsers, options.uid);
+        
+        if(remoteUsers[player.voice_id] && remoteUsers[player.voice_id].audioTrack){
+            const distance = Math.sqrt((player.x - myPlayer.x) ** 2 + (player.y - myPlayer.y) ** 2);
+            const volume = clamp((1 - (distance / (TILE_SIZE * ZOOM * 30))) * 105, 0, 100);
+            // console.log(volume, player.voice_id);
+            remoteUsers[player.voice_id].audioTrack.setVolume(volume);
+        }
     });
 
     arrows.forEach((arrow) => {
