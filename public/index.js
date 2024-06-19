@@ -65,8 +65,7 @@ const arrow_sprite = new Image();
 const mic = new Image();
 const walk = new Audio('/Audio/walk.wav');
 walk.loop = true;
-const PORT = process.env.PORT || 5000;
-const socket = io(`ws://localhost:${PORT}`);
+const socket = io();
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 

@@ -6,7 +6,7 @@ import loadMap from './mapLoader.js';
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
-
+const PORT = process.env.PORT || 5000;
 const TICK_RATE = 120;
 const SPEED = TICK_RATE * .0025;
 const ARROW_SPEED = SPEED * 2.5;
@@ -195,7 +195,7 @@ async function main() {
     // by default, will get index.html if no other resource is specified
     app.use(express.static("public"));
     
-    httpServer.listen(5000);
+    httpServer.listen(PORT);
 
     // attempt to serve 30 frames per second
     // 1000 ms / TICK_RATE(=30)
