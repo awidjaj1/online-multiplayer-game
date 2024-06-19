@@ -4,9 +4,9 @@ let TILE_SIZE = null;
 // zoom scales the tile size in the canvas
 let ZOOM = 0;
 
+// code from agora web SDK START
 const client = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
 const localTracks = {
-    videoTrack: null,
     audioTrack: null
 };
 const remoteUsers = {};
@@ -16,7 +16,21 @@ const options = {
     uid: null,
     token: null
 };
-
+async function subscribe(user, mediaType) {
+    await client.subscribe(user, mediaType);
+    if (mediaType === 'audio') {
+      user.audioTrack.play();
+    }
+}
+function handleUserPublished(user, mediaType) {
+    const id = user.uid;
+    remoteUsers[id] = user;
+    subscribe(user, mediaType);
+}
+function handleUserUnpublished(user) {
+    const id = user.uid;
+    delete remoteUsers[id];
+}
 async function join() {
     client.on("user-published", handleUserPublished);
     client.on("user-unpublished", handleUserUnpublished);
@@ -26,11 +40,21 @@ async function join() {
       AgoraRTC.createMicrophoneAudioTrack()
     ]);
 
-    $("#local-player-name").text(`localVideo(${options.uid})`);
-
     await client.publish(Object.values(localTracks));
-    console.log("publish success");
 }
+join();
+// code from agora web SDK END
+
+const button = document.getElementById('mute');
+button.addEventListener('click', () => {
+    if(button.innerHTML === 'mute') {
+        localTracks.audioTrack.setEnabled(false);
+        button.innerHTML = 'unmute';
+    } else{
+        localTracks.audioTrack.setEnabled(true);
+        button.innerHTML = 'mute';
+    }
+});
 
 const archer = new Image();
 const arrow_sprite = new Image();
