@@ -4,8 +4,38 @@ let TILE_SIZE = null;
 // zoom scales the tile size in the canvas
 let ZOOM = 0;
 
+const client = AgoraRTC.createClient({mode: "rtc", codec: "vp8"});
+const localTracks = {
+    videoTrack: null,
+    audioTrack: null
+};
+const remoteUsers = {};
+const options = {
+    appid: '9bd5b82699a74b7cb2f2ce9948e13be9',
+    channel: 'game',
+    uid: null,
+    token: null
+};
+
+async function join() {
+    client.on("user-published", handleUserPublished);
+    client.on("user-unpublished", handleUserUnpublished);
+  
+    [ options.uid, localTracks.audioTrack] = await Promise.all([
+      client.join(options.appid, options.channel, options.token || null),
+      AgoraRTC.createMicrophoneAudioTrack()
+    ]);
+
+    $("#local-player-name").text(`localVideo(${options.uid})`);
+
+    await client.publish(Object.values(localTracks));
+    console.log("publish success");
+}
+
 const archer = new Image();
 const arrow_sprite = new Image();
+const walk = new Audio('/Audio/walk.wav');
+walk.loop = true;
 
 const socket = io('ws://localhost:5000');
 const canvas = document.getElementById("canvas");
@@ -74,6 +104,9 @@ window.addEventListener('keydown', (e) => {
     } else if (e.key === "a"){
         inputs.left = true;
     }
+    if(Object.values(inputs).some(x => x)){
+        walk.play();
+    }
     socket.emit('input', inputs)
 });
 
@@ -86,6 +119,9 @@ window.addEventListener('keyup', (e) => {
         inputs.right = false;
     } else if (e.key === "a"){
         inputs.left = false;
+    }
+    if(Object.values(inputs).every(x => x === false)){
+        walk.pause();
     }
     socket.emit('input', inputs)
 });
