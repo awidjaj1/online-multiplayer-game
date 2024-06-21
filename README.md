@@ -9,4 +9,4 @@ Uses Agora io for in game proximity chat. Set up a token server to authenticate 
 ## Deployment?
 https://crash-out-archer.onrender.com
 
-Using Render's free tier web hosting service. This may be laggy since it's their free tier.
+Using Render's free tier web hosting service. After some inactivity, it takes a while (a couple of minutes) for the server to load since I'm using their free tier. 
